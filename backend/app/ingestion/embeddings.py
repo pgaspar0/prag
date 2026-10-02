@@ -21,18 +21,39 @@ def normalize_l2(vector: List[float]) -> List[float]:
     return [x / norm for x in vector]
 
 
+SYNTHETIC_STOPWORDS = {
+    "o", "a", "os", "as", "de", "do", "da", "dos", "das", "em", "no", "na", "nos", "nas",
+    "um", "uma", "uns", "umas", "por", "pelo", "pela", "pelos", "pelas", "para", "com", "sem",
+    "e", "ou", "que", "se", "ao", "aos", "qual", "quais", "quem", "como", "onde", "quando"
+}
+
+
 def generate_synthetic_embedding(text: str, dim: int = 768) -> List[float]:
     """
-    Generates a deterministic L2-normalized embedding vector based on text hash.
-    Used for local testing or when GEMINI_API_KEY is not configured.
+    Generates a deterministic L2-normalized embedding vector based on a bag-of-words hashing trick.
+    Used for local testing, CI, and offline benchmarks when GEMINI_API_KEY is not configured.
+    Texts sharing vocabulary will have natural positive cosine similarity.
     """
-    h = hashlib.sha256(text.encode("utf-8")).digest()
-    values = []
-    for i in range(dim):
-        byte_val = h[i % len(h)]
-        # Center around 0
-        values.append(float(byte_val - 128) / 128.0)
-    return normalize_l2(values)
+    import re
+    words = [
+        w for w in re.findall(r"\w+", text.lower())
+        if len(w) > 2 and w not in SYNTHETIC_STOPWORDS
+    ]
+
+    if not words:
+        h = hashlib.sha256(text.encode("utf-8")).digest()
+        values = [(float(h[i % len(h)] - 128) / 128.0) for i in range(dim)]
+        return normalize_l2(values)
+
+    vec = [0.0] * dim
+    for w in words:
+        h = hashlib.md5(w.encode("utf-8")).digest()
+        for i in range(16):
+            idx = int.from_bytes(h[i:i+2], "little") % dim
+            sign = 1.0 if (h[i] % 2 == 0) else -1.0
+            vec[idx] += sign
+
+    return normalize_l2(vec)
 
 
 @retry(

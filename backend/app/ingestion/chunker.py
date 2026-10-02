@@ -66,6 +66,7 @@ def create_chunks_from_pages(
                 "y0": w["y0"],
                 "x1": w["x1"],
                 "y1": w["y1"],
+                "text": w["text"],
             }
             for w in selected_words
         ]
