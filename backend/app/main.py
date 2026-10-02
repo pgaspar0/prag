@@ -9,6 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.db.session import get_db, engine
 
+import asyncio
+from app.ingestion.worker import run_worker_loop
+
 logger = structlog.get_logger()
 
 
@@ -22,9 +25,15 @@ async def lifespan(app: FastAPI):
         embed_model=settings.EMBED_MODEL,
         embed_dim=settings.EMBED_DIM,
     )
+    worker_task = asyncio.create_task(run_worker_loop())
     yield
     # Shutdown actions
     logger.info("server_shutting_down")
+    worker_task.cancel()
+    try:
+        await worker_task
+    except asyncio.CancelledError:
+        pass
     await engine.dispose()
 
 
