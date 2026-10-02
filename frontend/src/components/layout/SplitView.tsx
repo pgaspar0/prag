@@ -23,6 +23,7 @@ import {
   CitationVerified,
 } from "@/lib/api-client";
 import { ChatPanel } from "@/components/chat/ChatPanel";
+import { Navbar } from "@/components/layout/Navbar";
 
 // Load PdfViewer dynamically without SSR to prevent pdfjs canvas worker crashes
 const DynamicPdfViewer = dynamic(
@@ -126,60 +127,33 @@ export function SplitView() {
   return (
     <div className="flex flex-col h-screen bg-zinc-950 text-zinc-100 overflow-hidden font-sans">
       {/* Top Navbar */}
-      <header className="h-14 border-b border-zinc-800 bg-zinc-900/80 px-6 flex items-center justify-between backdrop-blur shrink-0">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-sky-600 flex items-center justify-center font-bold text-white shadow-md">
-            P
-          </div>
-          <div>
-            <h1 className="text-sm font-bold tracking-tight text-zinc-100 flex items-center gap-2">
-              PRAG
-              <span className="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-sky-950 border border-sky-800 text-sky-400">
-                Precise RAG & Citations
-              </span>
-            </h1>
-          </div>
-        </div>
+      <Navbar />
 
-        {/* Server status indicator */}
-        <div className="flex items-center gap-3">
-          {!isServerReady ? (
-            <div className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-950/40 px-3 py-1 rounded-full border border-amber-800/60 animate-pulse">
-              <AlertTriangle className="w-3.5 h-3.5" />
-              <span>A iniciar servidor (~1 min cold start)...</span>
-            </div>
-          ) : (
-            <div className="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-800/60">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-              <span>Servidor Ativo</span>
-            </div>
-          )}
-
-          {/* Mobile view switchers */}
-          <div className="flex md:hidden bg-zinc-800 p-0.5 rounded-lg border border-zinc-700">
-            <button
-              onClick={() => setMobileTab("chat")}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition-all ${
-                mobileTab === "chat"
-                  ? "bg-zinc-900 text-sky-400 shadow"
-                  : "text-zinc-400"
-              }`}
-            >
-              Chat
-            </button>
-            <button
-              onClick={() => setMobileTab("pdf")}
-              className={`px-3 py-1 text-xs rounded-md font-medium transition-all ${
-                mobileTab === "pdf"
-                  ? "bg-zinc-900 text-sky-400 shadow"
-                  : "text-zinc-400"
-              }`}
-            >
-              PDF
-            </button>
-          </div>
+      {/* Mobile view switchers */}
+      <div className="flex md:hidden bg-zinc-900 border-b border-zinc-800 p-2 justify-center shrink-0">
+        <div className="flex bg-zinc-800 p-0.5 rounded-lg border border-zinc-700 w-full max-w-xs">
+          <button
+            onClick={() => setMobileTab("chat")}
+            className={`flex-1 py-1 text-xs rounded-md font-medium text-center transition-all ${
+              mobileTab === "chat"
+                ? "bg-zinc-900 text-sky-400 shadow"
+                : "text-zinc-400"
+            }`}
+          >
+            Chat & Citações
+          </button>
+          <button
+            onClick={() => setMobileTab("pdf")}
+            className={`flex-1 py-1 text-xs rounded-md font-medium text-center transition-all ${
+              mobileTab === "pdf"
+                ? "bg-zinc-900 text-sky-400 shadow"
+                : "text-zinc-400"
+            }`}
+          >
+            Leitor de PDF
+          </button>
         </div>
-      </header>
+      </div>
 
       {/* Main Content: Sidebar + Split Workspace */}
       <div className="flex flex-1 overflow-hidden">

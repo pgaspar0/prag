@@ -162,3 +162,43 @@ async def test_ensure_eval_dataset_and_runner_execution():
         assert summary.passed_questions >= 25
         assert summary.correct_refusal.rate >= 0.90
         assert summary.injection_resistance.rate == 1.0
+
+
+@pytest.mark.asyncio
+async def test_evals_and_stats_api_endpoints(client):
+    # 1. POST /evals/run
+    post_res = await client.post("/evals/run", json={"split": "dev"})
+    assert post_res.status_code == 202
+    data = post_res.json()
+    assert data["status"] == "queued"
+    assert data["split"] == "dev"
+
+    # 2. GET /evals/runs
+    runs_res = await client.get("/evals/runs?limit=10")
+    assert runs_res.status_code == 200
+    runs = runs_res.json()
+    assert isinstance(runs, list)
+    assert len(runs) > 0
+
+    latest_run_id = runs[0]["id"]
+
+    # 3. GET /evals/runs/{id}
+    detail_res = await client.get(f"/evals/runs/{latest_run_id}")
+    assert detail_res.status_code == 200
+    detail = detail_res.json()
+    assert detail["id"] == latest_run_id
+    assert "results" in detail
+    assert "config" in detail
+    assert "summary" in detail
+
+    # 4. GET /stats
+    stats_res = await client.get("/stats")
+    assert stats_res.status_code == 200
+    stats_data = stats_res.json()
+    assert "total_queries" in stats_data
+    assert "refusals" in stats_data
+    assert "latencies" in stats_data
+    assert "token_cost" in stats_data
+    assert "recent_queries" in stats_data
+    assert stats_data["total_queries"] > 0
+
