@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 580" width="100%" height="100%" style="background:#09090b; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <linearGradient id="glowPulse" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.15"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Top bar of mock application -->
+  <g transform="translate(40, 30)">
+    <rect x="0" y="0" width="1020" height="42" rx="10" fill="#18181b" stroke="#27272a" stroke-width="1.5"/>
+    <circle cx="24" cy="21" r="5.5" fill="#f43f5e"/>
+    <circle cx="42" cy="21" r="5.5" fill="#f59e0b"/>
+    <circle cx="60" cy="21" r="5.5" fill="#10b981"/>
+    <rect x="90" y="10" width="22" height="22" rx="5" fill="#38bdf8"/>
+    <text x="101" y="25" font-size="12" font-weight="900" fill="#09090b" text-anchor="middle">P</text>
+    <text x="122" y="26" font-size="14" font-weight="800" fill="#f4f4f5">PRAG <tspan font-weight="400" fill="#71717a">| Demonstração Interativa Split-View</tspan></text>
+    <rect x="860" y="9" width="65" height="24" rx="6" fill="#27272a"/>
+    <text x="892" y="25" font-size="11" font-weight="600" fill="#38bdf8" text-anchor="middle">Scorecard</text>
+    <rect x="935" y="9" width="65" height="24" rx="6" fill="#27272a"/>
+    <text x="967" y="25" font-size="11" font-weight="600" fill="#a1a1aa" text-anchor="middle">Métricas</text>
+  </g>
+
+  <!-- Split View Left: Interactive Chat Panel -->
+  <g transform="translate(40, 85)">
+    <rect x="0" y="0" width="460" height="465" rx="12" fill="#121215" stroke="#27272a" stroke-width="1.5"/>
+    <!-- Chat Header -->
+    <rect x="0" y="0" width="460" height="42" rx="12" fill="#18181b"/>
+    <text x="20" y="26" font-size="13" font-weight="700" fill="#f4f4f5">Perguntas &amp; Citações Verificadas</text>
+    <text x="360" y="26" font-size="11" font-weight="600" fill="#10b981">● Verificador Ativo</text>
+
+    <!-- User Message -->
+    <g transform="translate(20, 60)">
+      <rect x="60" y="0" width="360" height="50" rx="10" fill="#0284c7" fill-opacity="0.2" stroke="#0284c7" stroke-width="1"/>
+      <text x="76" y="22" font-size="11.5" font-weight="600" fill="#e0f2fe">Qual é o compromisso de disponibilidade mensal (SLA)</text>
+      <text x="76" y="38" font-size="11.5" font-weight="600" fill="#e0f2fe">e a janela de manutenção programada?</text>
+    </g>
+
+    <!-- Assistant Message with Verified Citations -->
+    <g transform="translate(20, 126)">
+      <rect x="0" y="0" width="420" height="240" rx="10" fill="#18181b" stroke="#27272a" stroke-width="1"/>
+
+      <!-- Claim 1 -->
+      <text x="18" y="28" font-size="12" fill="#e4e4e7">O contrato assegura um índice de disponibilidade</text>
+      <text x="18" y="46" font-size="12" fill="#e4e4e7">mensal mínimo (uptime) de 99.9%.</text>
+
+      <!-- Badge 1 (Clickable) -->
+      <g transform="translate(18, 58)">
+        <rect x="0" y="0" width="130" height="24" rx="6" fill="#f59e0b" fill-opacity="0.2" stroke="#f59e0b" stroke-width="1.2"/>
+        <text x="65" y="16" font-size="10.5" font-weight="700" fill="#fbbf24" text-anchor="middle">📌 Página 3 [Cláusula 5.1]</text>
+      </g>
+      <text x="156" y="74" font-size="10" fill="#34d399">✓ Substring literal verificada</text>
+
+      <!-- Claim 2 -->
+      <text x="18" y="112" font-size="12" fill="#e4e4e7">As janelas de manutenção preventiva ocorrem</text>
+      <text x="18" y="130" font-size="12" fill="#e4e4e7">exclusivamente aos domingos entre as 02:00 e as 06:00.</text>
+
+      <!-- Badge 2 (Active highlighted citation) -->
+      <g transform="translate(18, 142)">
+        <rect x="0" y="0" width="130" height="24" rx="6" fill="#f59e0b" fill-opacity="0.35" stroke="#f59e0b" stroke-width="1.8"/>
+        <text x="65" y="16" font-size="10.5" font-weight="800" fill="#fef08a" text-anchor="middle">👉 Página 3 [Cláusula 5.3]</text>
+      </g>
+      <text x="156" y="158" font-size="10" fill="#34d399">✓ Substring literal verificada</text>
+
+      <!-- Latency & Gates Footer -->
+      <line x1="18" y1="182" x2="402" y2="182" stroke="#27272a" stroke-width="1"/>
+      <text x="18" y="202" font-size="10" fill="#71717a">Latência: <tspan fill="#38bdf8" font-weight="bold">682ms</tspan> (embed: 42ms | retrieve: 18ms | gen: 610ms | verify: 12ms)</text>
+      <text x="18" y="222" font-size="10" fill="#10b981">✓ Gate 1 (sim 0.68)  ✓ Gate 2 (answerable)  ✓ Gate 3 (2/2 citações verificadas)</text>
+    </g>
+
+    <!-- Input Form -->
+    <g transform="translate(20, 400)">
+      <rect x="0" y="0" width="420" height="44" rx="8" fill="#09090b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="16" y="26" font-size="11.5" fill="#71717a">Faz uma pergunta sobre o contrato...</text>
+      <rect x="360" y="7" width="50" height="30" rx="6" fill="#0284c7"/>
+      <text x="385" y="26" font-size="12" font-weight="700" fill="#ffffff" text-anchor="middle">→</text>
+    </g>
+  </g>
+
+  <!-- Interactive Jump Indicator Connector -->
+  <g transform="translate(480, 240)">
+    <path d="M 0,0 C 35,-30 50,-50 90,-40" fill="none" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5,4"/>
+    <polygon points="95,-39 85,-46 87,-34" fill="#f59e0b"/>
+    <rect x="15" y="-55" width="80" height="20" rx="4" fill="#27272a" stroke="#f59e0b" stroke-width="1"/>
+    <text x="55" y="-41" font-size="9.5" font-weight="800" fill="#fbbf24" text-anchor="middle">SALTO + BBOX</text>
+  </g>
+
+  <!-- Split View Right: Embedded PDF Viewer -->
+  <g transform="translate(580, 85)">
+    <rect x="0" y="0" width="480" height="465" rx="12" fill="#18181b" stroke="#27272a" stroke-width="1.5"/>
+    <!-- PDF Viewer Toolbar -->
+    <rect x="0" y="0" width="480" height="42" rx="12" fill="#27272a" fill-opacity="0.6"/>
+    <text x="20" y="26" font-size="12" font-weight="700" fill="#f4f4f5">nexus_cloud_contract.pdf</text>
+    <rect x="230" y="10" width="85" height="22" rx="5" fill="#18181b"/>
+    <text x="272" y="25" font-size="11" font-weight="700" fill="#f4f4f5" text-anchor="middle">Página 3 / 8</text>
+    <rect x="330" y="10" width="55" height="22" rx="5" fill="#18181b"/>
+    <text x="357" y="25" font-size="11" font-weight="600" fill="#a1a1aa" text-anchor="middle">100%</text>
+
+    <!-- Mock Rendered PDF Canvas Page -->
+    <g transform="translate(40, 56)">
+      <rect x="0" y="0" width="400" height="390" fill="#ffffff" rx="4" stroke="#d4d4d8" stroke-width="1"/>
+
+      <!-- Document Title on Page 3 -->
+      <text x="30" y="35" font-size="12" font-weight="bold" fill="#09090b">CLÁUSULA 5.ª — NÍVEIS DE SERVIÇO E DISPONIBILIDADE</text>
+      <text x="30" y="55" font-size="9" fill="#3f3f46">5.1. A Prestadora compromete-se perante o Cliente a assegurar que os Serviços</text>
+      <text x="30" y="68" font-size="9" fill="#3f3f46">Cloud estejam operacionais e acessíveis na infraestrutura primária.</text>
+
+      <!-- Golden Bounding Box Highlight 1 (Uptime 99.9%) -->
+      <rect x="28" y="82" width="344" height="28" rx="3" fill="#fef08a" stroke="#f59e0b" stroke-width="1.5"/>
+      <text x="32" y="95" font-size="9" font-weight="bold" fill="#09090b">"disponibilidade mensal (uptime) mínimo de 99.9% (noventa e nove vírgula</text>
+      <text x="32" y="106" font-size="9" font-weight="bold" fill="#09090b">nove por cento), calculado em base contínua de 24 horas por dia."</text>
+
+      <text x="30" y="128" font-size="9" fill="#3f3f46">5.2. O cálculo da disponibilidade exclui paragens decorrentes de força maior.</text>
+      <text x="30" y="148" font-size="10" font-weight="bold" fill="#09090b">5.3. Janelas de Manutenção Programada:</text>
+      <text x="30" y="162" font-size="9" fill="#3f3f46">As intervenções de manutenção corretiva ou preventiva na infraestrutura</text>
+
+      <!-- Golden Bounding Box Highlight 2 (Maintenance Sundays) with Pulse Glow -->
+      <rect x="28" y="172" width="344" height="28" rx="3" fill="#fde047" stroke="#b45309" stroke-width="2"/>
+      <text x="32" y="185" font-size="9" font-weight="bold" fill="#09090b">"serão realizadas exclusivamente aos domingos, entre as 02:00 e as 06:00"</text>
+      <text x="32" y="196" font-size="9" font-weight="bold" fill="#09090b">(fuso horário UTC), mediante notificação prévia de 72 horas ao Cliente.</text>
+
+      <text x="30" y="218" font-size="9" fill="#3f3f46">5.4. Penalidades por incumprimento contratual e compensação de fatura:</text>
+      <text x="30" y="232" font-size="9" fill="#3f3f46">Caso o SLA mensal caia abaixo de 99.9%, a Prestadora creditará ao Cliente um</text>
+      <text x="30" y="246" font-size="9" fill="#3f3f46">valor compensatório equivalente a 5% da mensalidade base por cada fração de hora.</text>
+
+      <!-- Page lines for realism -->
+      <line x1="30" y1="270" x2="370" y2="270" stroke="#e4e4e7" stroke-width="1"/>
+      <text x="30" y="290" font-size="9" fill="#71717a">Nexus Cloud Technologies, S.A. — Contrato de Serviços de Computação em Nuvem</text>
+      <text x="340" y="290" font-size="9" fill="#71717a">Pág. 3</text>
+    </g>
+  </g>
+</svg>

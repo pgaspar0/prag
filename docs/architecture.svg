@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 680" width="100%" height="100%" style="background:#09090b; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#121215"/>
+    </linearGradient>
+    <linearGradient id="highlightGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#fbbf24" stop-opacity="0.35"/>
+    </linearGradient>
+    <!-- Filters -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Title Header -->
+  <g transform="translate(60, 45)">
+    <rect x="0" y="0" width="44" height="44" rx="10" fill="url(#headerGrad)"/>
+    <text x="22" y="28" font-size="20" font-weight="900" fill="#09090b" text-anchor="middle">P</text>
+    <text x="56" y="26" font-size="22" font-weight="800" fill="#f4f4f5">PRAG — Arquitetura de RAG de Alta Precisão</text>
+    <text x="56" y="44" font-size="12" font-weight="500" fill="#a1a1aa">Citações auditáveis, verificação determinística e benchmark quantitativo (Wilson 95%)</text>
+  </g>
+
+  <!-- Section 1: Ingestion & Storage Pipeline -->
+  <g transform="translate(60, 115)">
+    <rect x="0" y="0" width="300" height="510" rx="14" fill="url(#cardGrad)" stroke="#27272a" stroke-width="1.5"/>
+    <rect x="0" y="0" width="300" height="42" rx="14" fill="#27272a" fill-opacity="0.4"/>
+    <circle cx="20" cy="21" r="5" fill="#38bdf8"/>
+    <text x="34" y="26" font-size="13" font-weight="700" fill="#f4f4f5">1. INGESTÃO &amp; PROCESSAMENTO</text>
+
+    <!-- Upload Step -->
+    <g transform="translate(18, 58)">
+      <rect x="0" y="0" width="264" height="66" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#38bdf8">Upload &amp; Validação (§4.2)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Magic bytes %PDF-, máx. 10MB/30p</text>
+      <text x="14" y="54" font-size="10.5" fill="#a1a1aa">• Deteção de digitalizados (&gt;50 char/p)</text>
+    </g>
+
+    <!-- PyMuPDF Step -->
+    <g transform="translate(18, 136)">
+      <rect x="0" y="0" width="264" height="74" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#38bdf8">PyMuPDF Extractor (§4.3)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Extração página a página (words + bboxes)</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• Limpeza de cabeçalhos/rodapés (&gt;50%)</text>
+      <text x="14" y="67" font-size="10.5" fill="#a1a1aa">• Coordenadas em escala PDF points</text>
+    </g>
+
+    <!-- Chunker Step -->
+    <g transform="translate(18, 222)">
+      <rect x="0" y="0" width="264" height="74" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#38bdf8">Chunker Adaptativo (§4.3)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Janela ~250 tokens / overlap 25 palavras</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• <tspan fill="#f59e0b" font-weight="bold">Invariante estrito:</tspan> máx. 2 páginas</text>
+      <text x="14" y="67" font-size="10.5" fill="#a1a1aa">• Mapeamento 1:1 de bounding boxes</text>
+    </g>
+
+    <!-- Embeddings Step -->
+    <g transform="translate(18, 308)">
+      <rect x="0" y="0" width="264" height="82" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#38bdf8">Embeddings Matryoshka (§2.2)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• gemini-embedding-001 (batch de 10)</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• Truncagem 3072d → <tspan fill="#38bdf8" font-weight="bold">768 dimensões</tspan></text>
+      <text x="14" y="67" font-size="10.5" fill="#a1a1aa">• Normalização vetorial L2 (Euclidiana)</text>
+    </g>
+
+    <!-- Storage Tier -->
+    <g transform="translate(18, 402)">
+      <rect x="0" y="0" width="264" height="92" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#38bdf8">Armazenamento Híbrido (§7)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Cloudflare R2 privado (presigned URLs)</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• Cache local em desenvolvimento</text>
+      <text x="14" y="67" font-size="10.5" fill="#a1a1aa">• PostgreSQL (pgvector + FTS Português)</text>
+      <text x="14" y="81" font-size="10.5" fill="#a1a1aa">• Limpeza cron de sessões após 24 horas</text>
+    </g>
+  </g>
+
+  <!-- Section 2: 3-Gate Verification Pipeline -->
+  <g transform="translate(390, 115)">
+    <rect x="0" y="0" width="320" height="510" rx="14" fill="url(#cardGrad)" stroke="#27272a" stroke-width="1.5"/>
+    <rect x="0" y="0" width="320" height="42" rx="14" fill="#27272a" fill-opacity="0.4"/>
+    <circle cx="20" cy="21" r="5" fill="#10b981"/>
+    <text x="34" y="26" font-size="13" font-weight="700" fill="#f4f4f5">2. PIPELINE DE 3 GATES (§5)</text>
+
+    <!-- Gate 1 -->
+    <g transform="translate(18, 58)">
+      <rect x="0" y="0" width="284" height="98" rx="8" fill="#18181b" stroke="#10b981" stroke-width="1.2"/>
+      <rect x="210" y="10" width="62" height="18" rx="4" fill="#10b981" fill-opacity="0.2"/>
+      <text x="241" y="23" font-size="9" font-weight="700" fill="#34d399" text-anchor="middle">GATE 1</text>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#34d399">Pesquisa Híbrida &amp; RRF</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• HNSW pgvector + FTS Português</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• Reciprocal Rank Fusion: 1/(60 + rank)</text>
+      <text x="14" y="68" font-size="10.5" fill="#f43f5e" font-weight="bold">Corte: sim_cosseno &lt; 0.40</text>
+      <text x="14" y="84" font-size="10" fill="#fb7185">→ Recusa imediata sem chamada ao LLM</text>
+    </g>
+
+    <!-- Gate 2 -->
+    <g transform="translate(18, 170)">
+      <rect x="0" y="0" width="284" height="110" rx="8" fill="#18181b" stroke="#38bdf8" stroke-width="1.2"/>
+      <rect x="210" y="10" width="62" height="18" rx="4" fill="#38bdf8" fill-opacity="0.2"/>
+      <text x="241" y="23" font-size="9" font-weight="700" fill="#38bdf8" text-anchor="middle">GATE 2</text>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#38bdf8">Geração Estruturada (LLM)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Gemini 2.5 Flash via JSON Schema</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• Resposta estruturada em claims atómicas</text>
+      <text x="14" y="67" font-size="10.5" fill="#a1a1aa">• Cada claim referencia chunk_id e citação</text>
+      <text x="14" y="83" font-size="10.5" fill="#f43f5e" font-weight="bold">Se answerable=false ou sem claims:</text>
+      <text x="14" y="99" font-size="10" fill="#fb7185">→ Recusa padronizada sem alucinação</text>
+    </g>
+
+    <!-- Gate 3 -->
+    <g transform="translate(18, 294)">
+      <rect x="0" y="0" width="284" height="198" rx="8" fill="#18181b" stroke="#f59e0b" stroke-width="1.2"/>
+      <rect x="210" y="10" width="62" height="18" rx="4" fill="#f59e0b" fill-opacity="0.2"/>
+      <text x="241" y="23" font-size="9" font-weight="700" fill="#fbbf24" text-anchor="middle">GATE 3</text>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#fbbf24">Verificador Determinístico</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Normalização Unicode NFKC</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• Remoção de hífens de quebra de linha</text>
+      <text x="14" y="67" font-size="10.5" fill="#a1a1aa">• Normalização de espaços e pontuação</text>
+      <text x="14" y="83" font-size="10.5" fill="#f4f4f5" font-weight="bold">1. Substring Match literal na página:</text>
+      <text x="24" y="98" font-size="10" fill="#34d399">✓ Sucesso: citação verificada</text>
+      <text x="14" y="116" font-size="10.5" fill="#f4f4f5" font-weight="bold">2. Fallback de Tolerância (token_set_ratio &gt; 92):</text>
+      <text x="24" y="131" font-size="10" fill="#fbbf24">✓ Recupera quebras de OCR/ligaduras</text>
+      <text x="14" y="150" font-size="10.5" fill="#f43f5e" font-weight="bold">Regra de Segurança de Ouro:</text>
+      <text x="14" y="166" font-size="10" fill="#fb7185">• Toda claim deve ter citação válida</text>
+      <text x="14" y="181" font-size="10" fill="#fb7185">• Se o verificador falhar → Recusa total</text>
+    </g>
+  </g>
+
+  <!-- Section 3: Frontend & Interactive Deep-Linking -->
+  <g transform="translate(740, 115)">
+    <rect x="0" y="0" width="300" height="510" rx="14" fill="url(#cardGrad)" stroke="#27272a" stroke-width="1.5"/>
+    <rect x="0" y="0" width="300" height="42" rx="14" fill="#27272a" fill-opacity="0.4"/>
+    <circle cx="20" cy="21" r="5" fill="#a855f7"/>
+    <text x="34" y="26" font-size="13" font-weight="700" fill="#f4f4f5">3. INTERFACE &amp; AUDITORIA (§6)</text>
+
+    <!-- Split-View Component -->
+    <g transform="translate(18, 58)">
+      <rect x="0" y="0" width="264" height="120" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#c084fc">Split-View Interativo (Next.js)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Leitor pdfjs-dist sem SSR</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• Painel de chat com badges [Pág. X]</text>
+      <text x="14" y="69" font-size="10.5" fill="#fbbf24" font-weight="bold">Deep-Linking de Citação:</text>
+      <text x="14" y="85" font-size="10" fill="#a1a1aa">1. Clique no badge salta para a página</text>
+      <text x="14" y="100" font-size="10" fill="#a1a1aa">2. Desenha overlay com glow sobre bboxes</text>
+    </g>
+
+    <!-- Scorecard View -->
+    <g transform="translate(18, 192)">
+      <rect x="0" y="0" width="264" height="140" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#c084fc">Scorecard Público (/evals)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Métricas determinísticas automatizadas</text>
+      <text x="14" y="53" font-size="10.5" fill="#a1a1aa">• <tspan fill="#38bdf8" font-weight="bold">Intervalos de Wilson (95%)</tspan> em todas</text>
+      <text x="14" y="67" font-size="10.5" fill="#a1a1aa">• Recall@k: 100.0% [79.6% - 100.0%]</text>
+      <text x="14" y="81" font-size="10.5" fill="#a1a1aa">• Citação Válida: 100.0% [64.6% - 100.0%]</text>
+      <text x="14" y="95" font-size="10.5" fill="#a1a1aa">• Recusa Correta: 100.0% [72.2% - 100.0%]</text>
+      <text x="14" y="109" font-size="10.5" fill="#a1a1aa">• Resistência Injeção: 100.0% [56.6% - 100.0%]</text>
+      <text x="14" y="125" font-size="10" fill="#a1a1aa">Tabela auditável de cada pergunta do teste</text>
+    </g>
+
+    <!-- Stats View -->
+    <g transform="translate(18, 346)">
+      <rect x="0" y="0" width="264" height="148" rx="8" fill="#18181b" stroke="#3f3f46" stroke-width="1"/>
+      <text x="14" y="22" font-size="12" font-weight="700" fill="#c084fc">Observabilidade (/stats)</text>
+      <text x="14" y="39" font-size="10.5" fill="#a1a1aa">• Latência decomposta em tempo real:</text>
+      <text x="24" y="53" font-size="10" fill="#38bdf8">Embed → Retrieve → Gen → Verify</text>
+      <text x="14" y="69" font-size="10.5" fill="#a1a1aa">• Contadores de Daily LLM Cap</text>
+      <text x="14" y="83" font-size="10.5" fill="#a1a1aa">• Decomposição de motivos de recusa</text>
+      <text x="14" y="97" font-size="10.5" fill="#a1a1aa">• Estimativa de tokens e custos</text>
+      <text x="14" y="111" font-size="10.5" fill="#a1a1aa">• Stream de auditoria das últimas queries</text>
+      <text x="14" y="130" font-size="9.5" fill="#71717a">Zero retenção de dados sensíveis</text>
+    </g>
+  </g>
+</svg>
