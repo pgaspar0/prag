@@ -1,11 +1,12 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any, List, Optional
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     ARRAY,
     Boolean,
     Computed,
+    Date,
     DateTime,
     ForeignKey,
     Index,
@@ -193,3 +194,19 @@ class EvalResult(Base):
     citation_valid: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     retrieval_hit: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
     passed: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+
+
+class DailyUsage(Base):
+    __tablename__ = "daily_usage"
+
+    usage_date: Mapped[date] = mapped_column(Date, primary_key=True)
+    llm_calls: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    tokens_in: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    tokens_out: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        server_default=text("now()"),
+    )
+

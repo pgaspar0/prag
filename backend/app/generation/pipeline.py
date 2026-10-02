@@ -7,6 +7,7 @@ import structlog
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.core.limits import increment_daily_llm_usage
 from app.db.models import QueryLog
 from app.generation.prompt import SYSTEM_PROMPT, format_user_prompt
 from app.generation.schema import (
@@ -290,6 +291,10 @@ async def answer_question_pipeline(
         # Controlled fallback on LLM error
         llm_output = LLMGenerationResponse(answerable=False, claims=[])
     t_generate_ms = int((time.perf_counter() - t0) * 1000)
+    # Increment daily usage metrics
+    tok_in = len(user_prompt) // 4
+    tok_out = len(str(llm_output.model_dump())) // 4
+    await increment_daily_llm_usage(db=db, tokens_in=tok_in, tokens_out=tok_out)
 
     # GATE 2: LLM answerability check
     if not llm_output.answerable or not llm_output.claims:

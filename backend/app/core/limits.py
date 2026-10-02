@@ -1,8 +1,65 @@
 import io
 import fitz  # PyMuPDF
 from fastapi import HTTPException, UploadFile, status
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.db.models import DailyUsage
+
+# SlowAPI Limiter configured with remote client IP
+limiter = Limiter(key_func=get_remote_address)
+
+DAILY_LLM_CAP_EXCEEDED_MSG = (
+    "Limite diário de chamadas LLM atingido para proteger a cota da demonstração. "
+    "O limite reinicia à meia-noite UTC."
+)
+
+
+async def check_daily_llm_cap(db: AsyncSession) -> None:
+    """
+    Verifies if the total LLM calls today have reached settings.DAILY_LLM_CAP.
+    Raises HTTP 429 Too Many Requests if cap is reached.
+    """
+    if settings.DAILY_LLM_CAP <= 0:
+        return
+
+    query = select(DailyUsage.llm_calls).where(DailyUsage.usage_date == func.current_date())
+    res = await db.execute(query)
+    current_calls = res.scalar() or 0
+    if current_calls >= settings.DAILY_LLM_CAP:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail=DAILY_LLM_CAP_EXCEEDED_MSG,
+        )
+
+
+async def increment_daily_llm_usage(
+    db: AsyncSession,
+    tokens_in: int = 0,
+    tokens_out: int = 0,
+) -> int:
+    """
+    Atomically increments today's LLM generation counter and token consumption.
+    """
+    stmt = text(
+        """
+        INSERT INTO daily_usage (usage_date, llm_calls, tokens_in, tokens_out, updated_at)
+        VALUES (CURRENT_DATE, 1, :tokens_in, :tokens_out, now())
+        ON CONFLICT (usage_date) DO UPDATE
+        SET llm_calls = daily_usage.llm_calls + 1,
+            tokens_in = daily_usage.tokens_in + :tokens_in,
+            tokens_out = daily_usage.tokens_out + :tokens_out,
+            updated_at = now()
+        RETURNING llm_calls;
+        """
+    )
+    res = await db.execute(stmt, {"tokens_in": tokens_in, "tokens_out": tokens_out})
+    await db.commit()
+    return res.scalar() or 1
+
 
 
 class PDFValidationError(HTTPException):

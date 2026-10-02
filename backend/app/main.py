@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
 import structlog
-from fastapi import FastAPI, Depends, status
+from slowapi.errors import RateLimitExceeded
+from fastapi import FastAPI, Depends, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
+from app.core.limits import limiter
 from app.db.session import get_db, engine
 
 import asyncio
@@ -43,6 +45,19 @@ app = FastAPI(
     version="0.1.0",
     lifespan=lifespan,
 )
+
+app.state.limiter = limiter
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+        content={
+            "detail": f"Limite de pedidos excedido ({exc.detail}). Por favor aguarde um momento antes de tentar novamente."
+        },
+    )
+
 
 # CORS middleware configured from settings
 app.add_middleware(

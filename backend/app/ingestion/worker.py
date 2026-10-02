@@ -10,6 +10,7 @@ from app.db.session import async_session_maker
 from app.ingestion.chunker import create_chunks_from_pages
 from app.ingestion.embeddings import generate_embeddings_batch
 from app.ingestion.extract import extract_pages_with_words
+from app.services.storage import delete_storage_file, get_local_file_path
 
 logger = structlog.get_logger()
 
@@ -33,6 +34,46 @@ async def recover_stale_jobs():
         if res.rowcount > 0:
             logger.info("recovered_stale_ingestion_jobs", count=res.rowcount)
             await db.commit()
+
+
+async def cleanup_expired_documents(max_age_hours: int = 24) -> int:
+    """
+    Deletes user documents older than `max_age_hours` (is_demo=False).
+    Removes files from storage (local and Cloudflare R2) and cascades database deletions.
+    Demo documents (is_demo=True) are strictly preserved.
+    """
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=max_age_hours)
+    deleted_count = 0
+    async with async_session_maker() as db:
+        query = select(Document).where(
+            Document.is_demo == False,  # noqa: E712
+            Document.created_at < cutoff,
+        )
+        res = await db.execute(query)
+        expired_docs = res.scalars().all()
+
+        for doc in expired_docs:
+            logger.info(
+                "cleaning_expired_user_document",
+                document_id=str(doc.id),
+                created_at=doc.created_at.isoformat(),
+            )
+            try:
+                await delete_storage_file(doc.storage_key)
+            except Exception as exc:
+                logger.warning(
+                    "failed_deleting_storage_file_during_cleanup",
+                    storage_key=doc.storage_key,
+                    error=str(exc),
+                )
+            await db.delete(doc)
+            deleted_count += 1
+
+        if deleted_count > 0:
+            await db.commit()
+            logger.info("cleanup_expired_documents_finished", deleted_count=deleted_count)
+
+    return deleted_count
 
 
 async def process_single_job(job_id) -> bool:
@@ -60,8 +101,9 @@ async def process_single_job(job_id) -> bool:
         logger.info("processing_document", document_id=str(doc.id), filename=doc.filename)
 
         try:
-            # 1. Extract pages with word bboxes & strip repetitive headers/footers
-            pages = await asyncio.to_thread(extract_pages_with_words, doc.storage_key)
+            # 1. Resolve local path and extract pages with word bboxes
+            local_pdf_path = str(get_local_file_path(doc.storage_key))
+            pages = await asyncio.to_thread(extract_pages_with_words, local_pdf_path)
             doc.page_count = len(pages)
 
             # 2. Chunk pages into ~250 token windows preserving bboxes & max 2 pages invariant
@@ -120,9 +162,17 @@ async def run_worker_loop():
     """Main worker loop that polls for queued jobs with SKIP LOCKED."""
     logger.info("ingestion_worker_started")
     await recover_stale_jobs()
+    await cleanup_expired_documents()
+    last_cleanup = datetime.now(timezone.utc)
 
     while True:
         try:
+            # Periodic cleanup every 1 hour
+            now = datetime.now(timezone.utc)
+            if (now - last_cleanup).total_seconds() > 3600:
+                await cleanup_expired_documents()
+                last_cleanup = now
+
             async with async_session_maker() as db:
                 # Find next queued job with SKIP LOCKED
                 query = text(

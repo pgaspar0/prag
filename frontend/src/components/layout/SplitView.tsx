@@ -191,6 +191,13 @@ export function SplitView() {
                 {uploadError}
               </p>
             )}
+
+            <div className="mt-2.5 p-2 rounded-lg bg-zinc-950/70 border border-zinc-800 text-[10px] text-zinc-400 leading-relaxed flex items-start gap-1.5">
+              <span className="text-amber-400 font-bold shrink-0">ℹ</span>
+              <span>
+                Não carregues documentos confidenciais nesta demonstração pública. Os documentos carregados são eliminados automaticamente após 24 horas.
+              </span>
+            </div>
           </div>
 
           {/* Document list */}

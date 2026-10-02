@@ -2,22 +2,28 @@ import hashlib
 import uuid
 from typing import List
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, RedirectResponse
 from sqlalchemy import or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.api.schemas import DocumentDetailResponse, DocumentResponse, DocumentUploadResponse
-from app.core.limits import validate_pdf_upload
+from app.core.limits import limiter, validate_pdf_upload
 from app.core.security import get_or_create_session_id
 from app.db.models import Document, IngestionJob
 from app.db.session import get_db
-from app.services.storage import delete_local_file, get_local_file_path, save_file_locally
+from app.services.storage import (
+    delete_storage_file,
+    generate_presigned_url,
+    get_local_file_path,
+    save_file,
+)
 
 router = APIRouter(prefix="/documents", tags=["Documents"])
 
 
 @router.post("", response_model=DocumentUploadResponse, status_code=status.HTTP_202_ACCEPTED)
+@limiter.limit("5/hour")
 async def upload_document(
     request: Request,
     response: Response,
@@ -59,7 +65,7 @@ async def upload_document(
 
     # 3. Save to storage
     doc_id = uuid.uuid4()
-    storage_key = await save_file_locally(str(doc_id), content)
+    storage_key = await save_file(str(doc_id), content)
 
     # 4. Create document & ingestion job
     document = Document(
@@ -207,6 +213,15 @@ async def get_document_file(
             detail="Documento não encontrado ou sem permissão de acesso.",
         )
 
+    # 1. If Cloudflare R2 is configured, generate a temporary presigned URL (10 min) and redirect
+    presigned_url = generate_presigned_url(doc.storage_key, expires_in=600)
+    if presigned_url:
+        return RedirectResponse(
+            url=presigned_url,
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+        )
+
+    # 2. Local storage fallback with HTTP Range support
     file_path = get_local_file_path(doc.storage_key)
     if not file_path.exists():
         raise HTTPException(
@@ -243,8 +258,8 @@ async def delete_document(
             detail="Documento não encontrado ou sem permissão para apagar.",
         )
 
-    # Delete physical file
-    await delete_local_file(doc.storage_key)
+    # Delete physical file (both R2 and local)
+    await delete_storage_file(doc.storage_key)
 
     # Delete database record (cascades to chunks and jobs)
     await db.delete(doc)
