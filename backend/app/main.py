@@ -53,8 +53,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.api import documents
+from app.api import documents, ask
 app.include_router(documents.router)
+app.include_router(ask.router)
 
 
 @app.get("/health", status_code=status.HTTP_200_OK, tags=["Health"])

@@ -90,14 +90,15 @@ def test_chunker_invariants():
 async def test_end_to_end_worker_ingestion(tmp_path):
     pdf_bytes = create_sample_multi_page_pdf(num_pages=3)
     doc_id = uuid.uuid4()
+    rand_suffix = uuid.uuid4().hex[:8]
     storage_key = await save_file_locally(str(doc_id), pdf_bytes)
 
     async with async_session_maker() as db:
         doc = Document(
             id=doc_id,
-            session_id="test_worker_session",
+            session_id=f"test_worker_session_{rand_suffix}",
             filename="contrato_demo.pdf",
-            sha256="dummy_sha_worker",
+            sha256=f"dummy_sha_worker_{rand_suffix}",
             storage_key=storage_key,
             page_count=3,
             status="queued",
@@ -148,12 +149,13 @@ async def test_end_to_end_worker_ingestion(tmp_path):
 @pytest.mark.asyncio
 async def test_recover_stale_jobs():
     doc_id = uuid.uuid4()
+    rand_suffix = uuid.uuid4().hex[:8]
     async with async_session_maker() as db:
         doc = Document(
             id=doc_id,
-            session_id="test_stale_session",
+            session_id=f"test_stale_session_{rand_suffix}",
             filename="stale.pdf",
-            sha256="stale_sha",
+            sha256=f"stale_sha_{rand_suffix}",
             storage_key="dummy_path",
             status="processing",
         )
