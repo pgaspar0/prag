@@ -44,6 +44,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from app.api import documents
+app.include_router(documents.router)
+
 
 @app.get("/health", status_code=status.HTTP_200_OK, tags=["Health"])
 async def health_check():

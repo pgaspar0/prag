@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 
+from sqlalchemy.pool import NullPool
 from app.config import settings
 
 # In asyncpg with pgbouncer (Neon), statement cache must be disabled
@@ -13,7 +14,7 @@ engine: AsyncEngine = create_async_engine(
     settings.DATABASE_URL,
     echo=(settings.ENV == "development"),
     connect_args={"statement_cache_size": 0},
-    pool_pre_ping=True,
+    poolclass=NullPool,
 )
 
 async_session_maker = async_sessionmaker(
