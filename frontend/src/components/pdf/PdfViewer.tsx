@@ -6,9 +6,9 @@ import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, RotateCcw } from "lucide-re
 import { BoundingBox } from "@/lib/api-client";
 import { HighlightOverlay } from "./HighlightOverlay";
 
-// Configure worker to matching unpkg CDN
+// Configure local worker from public directory
 if (typeof window !== "undefined" && !pdfjsLib.GlobalWorkerOptions.workerSrc) {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjsLib.version}/build/pdf.worker.min.mjs`;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
 }
 
 interface PdfViewerProps {
@@ -36,6 +36,7 @@ export function PdfViewer({
   useEffect(() => {
     if (!pdfUrl) return;
 
+    let isCancelled = false;
     setLoading(true);
     setError(null);
 
@@ -46,19 +47,35 @@ export function PdfViewer({
 
     loadingTask.promise
       .then((doc) => {
+        if (isCancelled) {
+          doc.destroy();
+          return;
+        }
         setPdfDoc(doc);
         setTotalPages(doc.numPages);
         setCurrentPage(targetPage || 1);
         setLoading(false);
       })
       .catch((err) => {
+        if (
+          isCancelled ||
+          err?.name === "RenderingCancelledException" ||
+          err?.message?.includes("Worker was destroyed")
+        ) {
+          return;
+        }
         console.error("Failed to load PDF:", err);
         setError("Não foi possível carregar o documento PDF.");
         setLoading(false);
       });
 
     return () => {
-      loadingTask.destroy();
+      isCancelled = true;
+      try {
+        loadingTask.destroy();
+      } catch {
+        // ignore cancellation
+      }
     };
   }, [pdfUrl]);
 
@@ -73,33 +90,53 @@ export function PdfViewer({
   useEffect(() => {
     if (!pdfDoc || !canvasRef.current) return;
 
+    let isCancelled = false;
     let renderTask: pdfjsLib.RenderTask | null = null;
 
-    pdfDoc.getPage(currentPage).then((page) => {
-      const viewport = page.getViewport({ scale });
-      const canvas = canvasRef.current;
-      if (!canvas) return;
+    pdfDoc
+      .getPage(currentPage)
+      .then((page) => {
+        if (isCancelled) return;
+        const viewport = page.getViewport({ scale });
+        const canvas = canvasRef.current;
+        if (!canvas) return;
 
-      const context = canvas.getContext("2d");
-      if (!context) return;
+        const context = canvas.getContext("2d");
+        if (!context) return;
 
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.width = viewport.width;
 
-      const renderContext = {
-        canvasContext: context,
-        viewport: viewport,
-      };
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+        };
 
-      renderTask = page.render(renderContext);
-      renderTask.promise.catch((err) => {
-        if (err?.name !== "RenderingCancelledException") {
+        renderTask = page.render(renderContext);
+        renderTask.promise.catch((err) => {
+          if (
+            isCancelled ||
+            err?.name === "RenderingCancelledException" ||
+            err?.message?.includes("Worker was destroyed")
+          ) {
+            return;
+          }
           console.error("Render error:", err);
+        });
+      })
+      .catch((err) => {
+        if (
+          isCancelled ||
+          err?.name === "RenderingCancelledException" ||
+          err?.message?.includes("Worker was destroyed")
+        ) {
+          return;
         }
+        console.error("GetPage error:", err);
       });
-    });
 
     return () => {
+      isCancelled = true;
       if (renderTask) {
         renderTask.cancel();
       }

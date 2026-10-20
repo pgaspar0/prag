@@ -12,6 +12,10 @@ logger = structlog.get_logger()
 
 def ensure_storage_dir() -> Path:
     storage_path = Path(settings.STORAGE_DIR)
+    if not storage_path.is_absolute() and not storage_path.exists():
+        backend_root = Path(__file__).resolve().parent.parent.parent
+        if (backend_root / "storage").exists():
+            storage_path = backend_root / "storage"
     storage_path.mkdir(parents=True, exist_ok=True)
     return storage_path
 
@@ -116,12 +120,18 @@ def generate_presigned_url(storage_key: str, expires_in: int = 600) -> Optional[
 def get_local_file_path(storage_key: str) -> Path:
     """
     Returns Path object for a given storage_key.
-    First checks literal path, then looks in STORAGE_DIR.
+    First checks literal path, then looks in STORAGE_DIR and backend storage.
     """
     path = Path(storage_key)
-    if path.exists():
+    if path.is_file():
         return path
     candidate = Path(settings.STORAGE_DIR) / path.name
+    if candidate.is_file():
+        return candidate
+    backend_root = Path(__file__).resolve().parent.parent.parent
+    candidate_app = backend_root / "storage" / path.name
+    if candidate_app.is_file():
+        return candidate_app
     return candidate
 
 

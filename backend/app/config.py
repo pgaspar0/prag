@@ -26,7 +26,7 @@ class Settings(BaseSettings):
 
     # LLM & Embedding Models (Strictly configurable, NEVER hardcoded in business logic)
     GEMINI_API_KEY: str = Field(default="", description="Google Gemini API key")
-    GEN_MODEL: str = Field(default="gemini-2.5-flash", description="Generation model name")
+    GEN_MODEL: str = Field(default="gemini-3.5-flash", description="Generation model name")
     EMBED_MODEL: str = Field(default="gemini-embedding-001", description="Embedding model name")
     EMBED_DIM: int = Field(default=768, description="Embedding vector dimension (768 for HNSW compatibility)")
 

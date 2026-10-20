@@ -19,14 +19,28 @@ from app.generation.schema import (
 from app.generation.verifier import verify_citation_quote
 from app.ingestion.embeddings import generate_embedding
 from app.retrieval.hybrid import search_hybrid
+from tenacity import retry, stop_after_attempt, wait_random_exponential
 
 logger = structlog.get_logger()
 
 REFUSAL_MESSAGE = "Não encontrei esta informação nos documentos fornecidos."
 
 
+@retry(
+    wait=wait_random_exponential(min=1, max=5),
+    stop=stop_after_attempt(3),
+    reraise=True,
+)
+def _generate_with_retry(client, model: str, contents: str, config: Any):
+    return client.models.generate_content(
+        model=model,
+        contents=contents,
+        config=config,
+    )
+
+
 def _call_gemini_generate(user_prompt: str) -> LLMGenerationResponse:
-    """Invokes Gemini Flash with structured JSON output."""
+    """Invokes Gemini Flash with structured JSON output and automatic retry/fallback."""
     if not settings.GEMINI_API_KEY or settings.GEMINI_API_KEY == "your_gemini_api_key_here":
         # Deterministic mock fallback for local tests without API key
         return _mock_llm_response(user_prompt)
@@ -35,19 +49,31 @@ def _call_gemini_generate(user_prompt: str) -> LLMGenerationResponse:
     from google.genai import types
 
     client = genai.Client(api_key=settings.GEMINI_API_KEY)
-    response = client.models.generate_content(
-        model=settings.GEN_MODEL,
-        contents=user_prompt,
-        config=types.GenerateContentConfig(
-            system_instruction=SYSTEM_PROMPT,
-            response_mime_type="application/json",
-            response_schema=LLMGenerationResponse,
-            temperature=0.0,
-        ),
+    config = types.GenerateContentConfig(
+        system_instruction=SYSTEM_PROMPT,
+        response_mime_type="application/json",
+        response_schema=LLMGenerationResponse,
+        temperature=0.0,
     )
 
-    data = json.loads(response.text)
-    return LLMGenerationResponse.model_validate(data)
+    models_to_try = [settings.GEN_MODEL]
+    if "flash-lite" not in settings.GEN_MODEL:
+        models_to_try.append("gemini-3.5-flash-lite")
+
+    last_error = None
+    for model_name in models_to_try:
+        try:
+            response = _generate_with_retry(client, model_name, user_prompt, config)
+            data = json.loads(response.text)
+            return LLMGenerationResponse.model_validate(data)
+        except Exception as exc:
+            last_error = exc
+            logger.warning("gemini_generate_attempt_failed", model=model_name, error=str(exc))
+            continue
+
+    if last_error:
+        raise last_error
+    return LLMGenerationResponse(answerable=False, claims=[])
 
 
 def _mock_llm_response(user_prompt: str) -> LLMGenerationResponse:
